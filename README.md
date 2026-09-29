@@ -15,9 +15,15 @@ HTML / CSS / Vanilla JS  ->  REST API  ->  Spring Boot  ->  MySQL
 **Requirements:** a JDK (21 or newer), Maven 3.9+, and a running MySQL 8 server on
 port 3306. Nothing else — no Node, no npm, no build step for the frontend.
 
-1. Put your MySQL password in
-   `backend/src/main/resources/application.properties`
-   (`spring.datasource.password=...`). The database itself does not need to exist.
+1. Tell the app your MySQL password once, through a Windows environment variable.
+   It is deliberately **not** stored anywhere inside the project:
+
+   ```bat
+   setx DB_PASSWORD "your MySQL password"
+   ```
+
+   Then open a **new** command prompt so the new variable is picked up. The
+   database itself does not need to exist.
 2. **Double-click `START.bat`.** It checks Java, MySQL and port 8080, builds the jar
    if the sources changed, starts the server and opens your browser.
 3. Sign in with one of the demo accounts (the login screen also has one-click
@@ -125,16 +131,34 @@ never duplicates rows.
 
 ### Credentials
 
-Edit `backend/src/main/resources/application.properties`:
+`backend/src/main/resources/application.properties` holds **no password**. It reads
+both credentials from environment variables and falls back to a default:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/kiot_canteen?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata
-spring.datasource.username=root
-spring.datasource.password=YOUR_PASSWORD
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:}
 ```
 
-> Replace `YOUR_PASSWORD` with your own MySQL password. The password is never
-> printed by any script, and is not committed to this repository.
+Set them once for your Windows user, then open a new terminal so the change is
+visible:
+
+```bat
+setx DB_USERNAME root
+setx DB_PASSWORD "your MySQL password"
+```
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `DB_USERNAME` | `root` | MySQL user |
+| `DB_PASSWORD` | *(empty)* | MySQL password |
+
+`START.bat`, `STATUS.bat` and `DATABASE.bat` all understand this form, so they keep
+working whether the password is supplied through the environment or written
+directly into the properties file. No script ever prints the password, and because
+the value lives outside the project folder it cannot be committed by accident.
+
+If you prefer to keep the password in a file, replace the two lines above with the
+user name and the password directly - but do not commit that change.
 
 ---
 
@@ -372,33 +396,36 @@ orders stay correct even if the menu or a price changes later.
 
 ## 10. How to verify it works
 
-1. **Startup** - run `START.bat`. You should see Java OK, MySQL OK, port free, a
+1. **Credentials** - confirm `echo %DB_PASSWORD%` prints your MySQL password. If it
+   is empty, set it with `setx` and open a new terminal, otherwise the server
+   starts but cannot reach the database.
+2. **Startup** - run `START.bat`. You should see Java OK, MySQL OK, port free, a
    successful build, and then `Started CanteenApplication` in a new window.
-2. **Health** - run `STATUS.bat`. Every line should be `OK` and the verdict should
-   be "everything looks good".
-3. **Login** - sign in as `student@kiot.edu` / `canteen123`. A wrong password must
+3. **Health** - run `STATUS.bat`. Every line should report the item as available or
+   running, and the verdict should be "everything looks good".
+4. **Login** - sign in as `student@kiot.edu` / `canteen123`. A wrong password must
    show "Invalid email or password" and must not reveal the app.
-4. **Menu** - the Menu tab shows 17 cards. Searching `dosa` narrows it to 2, the
+5. **Menu** - the Menu tab shows 17 cards. Searching `dosa` narrows it to 2, the
    Biryani chip narrows it to 3, and a nonsense search shows the empty state.
-5. **Images** - every dish photo should render. If you go offline they degrade to
+6. **Images** - every dish photo should render. If you go offline they degrade to
    gradient tiles with the dish name, never to broken-image icons.
-6. **Cart maths** - add Idli twice and Vada once: the total must read 65.00. Press
+7. **Cart maths** - add Idli twice and Vada once: the total must read 65.00. Press
    the `-` on Idli: 45.00. Remove Vada: 40.00. Clear the cart and the empty state
    appears, and the Pickup step becomes unreachable.
-7. **Pickup** - "Proceed to payment" stays disabled until both a date and a slot
+8. **Pickup** - "Proceed to payment" stays disabled until both a date and a slot
    are chosen.
-8. **Payment and ordering** - place the order with UPI, then again with Cash. The
-   confirmation must show `KIOT-CAN-<year>-00001`-style code, `CONFIRMED`, and
+9. **Payment and ordering** - place the order with UPI, then again with Cash. The
+   confirmation must show a `KIOT-CAN-<year>-00001`-style code, `CONFIRMED`, and
    `Payment: PAID` for UPI / Card but `Payment: PENDING` for Cash. The cart must be
    empty afterwards.
-9. **QR** - the QR image must appear on the confirmation screen, and "View QR" in
-   My Orders must reopen it. Scanning it returns the order code, student ID, pickup
-   time, status and total.
-10. **Isolation** - log out, sign in as `demo@kiot.edu`, and My Orders must not
+10. **QR** - the QR image must appear on the confirmation screen, and "View QR" in
+    My Orders must reopen it. Scanning it returns the order code, student ID, pickup
+    time, status and total.
+11. **Isolation** - log out, sign in as `demo@kiot.edu`, and My Orders must not
     contain the other student's orders.
-11. **Persistence** - restart the app. Your orders are still in My Orders, and the
+12. **Persistence** - restart the app. Your orders are still in My Orders, and the
     row counts in `DATABASE.bat` are unchanged.
-12. **Data** - run `DATABASE.bat`, choose `7` for row counts. The users table holds
+13. **Data** - run `DATABASE.bat`, choose `7` for row counts. The users table holds
     2 rows, `food_items` holds 17, and `orders` and `payments` always have the same
     number of rows.
 
@@ -426,9 +453,10 @@ These are deliberate scope decisions, not defects, but they are worth knowing:
   show the designed gradient fallback rather than a photo.
 - **CORS allows any origin** (`allowedOriginPatterns("*")`), which is convenient
   locally but should be restricted before any real deployment.
-- **The MySQL password sits in `application.properties`.** There is no environment
-  variable or secret store, so that file must never be committed with a real
-  password in it.
+- **Database credentials come from environment variables.** `DB_USERNAME` and
+  `DB_PASSWORD` must be set on each machine that runs the app. That keeps the
+  password out of the project, but it is one extra setup step, and a plain
+  environment variable is a convenience rather than a real secret store.
 
 ---
 
@@ -462,7 +490,9 @@ Run it again in a terminal so Maven's output is visible:
 installation or a wrong MySQL password, not a code problem.
 
 **`Access denied for user 'root'@'localhost'`**
-The password in `application.properties` does not match your MySQL root password.
+The `DB_PASSWORD` environment variable is missing or wrong. Check it with
+`echo %DB_PASSWORD%`, then run `setx DB_PASSWORD "your MySQL password"` and open a
+new terminal so the value is visible.
 
 **Port 8080 is already in use**
 ```bash

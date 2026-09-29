@@ -49,7 +49,7 @@ echo    !MYSQL_TXT!
 echo.
 
 REM ================= Database =================
-set "DB_TXT=NOT FOUND"
+set "DB_TXT=NOT REACHABLE  -  set the DB_PASSWORD environment variable"
 call :find_mysql
 if defined MYSQLBIN (
     call :read_db_conf
@@ -149,5 +149,10 @@ for /f "usebackq tokens=1,* delims==" %%a in ("%PROPS%") do (
     if "%%a"=="spring.datasource.password" set "DBPASS=%%b"
 )
 :confdone
+REM A value such as ${DB_USERNAME:root} means: take it from the
+REM environment variable of that name, or use the default shown
+REM after the colon. This keeps the password out of this file.
+if /i "!DBUSER:~0,2!"=="${" set "DBUSER=!DB_USERNAME!"
+if /i "!DBPASS:~0,2!"=="${" set "DBPASS=!DB_PASSWORD!"
 if not defined DBUSER set "DBUSER=root"
 exit /b 0

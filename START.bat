@@ -225,6 +225,13 @@ REM ---------------------------------------------------------------
 REM 5. Start the server in its own visible window
 REM ---------------------------------------------------------------
 echo [5/5] Starting KIOT Canteen...
+if not defined DB_PASSWORD (
+    echo       Note: DB_PASSWORD is not set, so the server will try to
+    echo       connect to MySQL with an empty password. If that fails,
+    echo       set it once and run this file again:
+    echo         setx DB_PASSWORD "your MySQL password"
+    echo.
+)
 start "KIOT Canteen Server" /D "%BACKEND%" cmd /k "java -jar target\kiot-canteen.jar"
 echo       A "KIOT Canteen Server" window has opened. Keep it open.
 echo.
