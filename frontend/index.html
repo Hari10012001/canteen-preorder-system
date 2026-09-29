@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="theme-color" content="#0A1A2F">
+<title>KIOT Canteen &middot; Pre-Order System</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230A1A2F'/><text y='68' x='50' text-anchor='middle' font-size='52' font-family='sans-serif' font-weight='bold' fill='%2314B8A6'>K</text></svg>">
+<link rel="preconnect" href="https://upload.wikimedia.org">
+<link rel="preconnect" href="https://thumb.wikimedia.org">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<section class="screen auth-screen" id="view-login" data-view="login">
+  <div class="auth-wrap">
+    <div class="auth-brand">
+      <div class="logo-mark">K</div>
+      <div>
+        <h1>KIOT Canteen</h1>
+        <p>Pre-order &middot; Skip the queue</p>
+      </div>
+    </div>
+
+    <div class="card auth-card">
+      <h2>Student Sign in</h2>
+      <p class="muted small">Use your registered college email to continue.</p>
+
+      <form id="login-form" novalidate>
+        <label class="field">
+          <span>Email address</span>
+          <input type="email" id="login-email" name="email" placeholder="student@kiot.edu"
+                 autocomplete="username" required>
+        </label>
+
+        <label class="field">
+          <span>Password</span>
+          <input type="password" id="login-password" name="password" placeholder="Enter your password"
+                 autocomplete="current-password" required>
+        </label>
+
+        <p class="form-error" id="login-error" hidden></p>
+
+        <button type="submit" class="btn btn-primary btn-block" id="login-submit">Sign in</button>
+      </form>
+
+      <div class="demo-box">
+        <div class="demo-title">Demo accounts</div>
+        <button type="button" class="demo-row" data-email="student@kiot.edu" data-pass="canteen123">
+          <span><strong>student@kiot.edu</strong><em>canteen123</em></span>
+          <span class="demo-use">Use</span>
+        </button>
+        <button type="button" class="demo-row" data-email="demo@kiot.edu" data-pass="demo1234">
+          <span><strong>demo@kiot.edu</strong><em>demo1234</em></span>
+          <span class="demo-use">Use</span>
+        </button>
+      </div>
+    </div>
+
+    <p class="auth-foot muted small">Final year project prototype &middot; Spring Boot + MySQL</p>
+  </div>
+</section>
+
+<!-- ===================== APP SHELL ===================== -->
+<div class="app" id="app-shell" hidden>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#home" data-nav="home">
+        <span class="logo-mark sm">K</span>
+        <span class="brand-text">KIOT Canteen</span>
+      </a>
+
+      <nav class="topnav">
+        <a href="#home" data-nav="home">Home</a>
+        <a href="#menu" data-nav="menu">Menu</a>
+        <a href="#orders" data-nav="orders">My Orders</a>
+      </nav>
+
+      <div class="topbar-right">
+        <button class="icon-btn cart-btn" id="cart-btn" aria-label="Open cart">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/>
+            <path d="M1.5 2h3l2.3 12.2a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 6H5.2"/>
+          </svg>
+          <span class="badge" id="cart-count" hidden>0</span>
+        </button>
+
+        <div class="user-chip" id="user-chip" title="Signed in">
+          <span class="avatar" id="user-initials">S</span>
+          <span class="user-meta">
+            <strong id="user-name">Student</strong>
+            <em id="user-id">&mdash;</em>
+          </span>
+        </div>
+
+        <button class="icon-btn logout-btn" id="logout-btn" aria-label="Log out" title="Log out">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ---------- HOME ---------- -->
+    <section class="screen" id="view-home" data-view="home">
+      <div class="hero">
+        <div class="hero-text">
+          <span class="pill">KIOT Main Canteen</span>
+          <h2>Order ahead.<br>Pick up fresh.</h2>
+          <p>Pre-order your tiffin and meals, choose a pickup slot, and walk straight to the counter. No queue at 12:30.</p>
+          <div class="hero-actions">
+            <a href="#menu" class="btn btn-primary" data-nav="menu">Browse menu</a>
+            <a href="#orders" class="btn btn-ghost" data-nav="orders">My orders</a>
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><strong>17</strong><span>Dishes daily</span></div>
+          <div class="stat"><strong>8</strong><span>Categories</span></div>
+          <div class="stat"><strong>15m</strong><span>Pickup slots</span></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Order by category</h3>
+      </div>
+      <div class="cat-grid" id="home-categories"></div>
+
+      <div class="section-head">
+        <h3>Popular right now</h3>
+        <a class="link" href="#menu" data-nav="menu">See full menu &rsaquo;</a>
+      </div>
+      <div class="food-grid" id="home-popular"></div>
+    </section>
+
+    <!-- ---------- MENU ---------- -->
+    <section class="screen" id="view-menu" data-view="menu">
+      <div class="page-head">
+        <h2>Menu</h2>
+        <p class="muted">Freshly prepared throughout the day. Prices include all canteen taxes.</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>
+          </svg>
+          <input type="search" id="menu-search" placeholder="Search dishes&hellip;" aria-label="Search menu">
+        </div>
+      </div>
+
+      <div class="chips" id="category-chips"></div>
+
+      <div class="food-grid" id="menu-grid"></div>
+      <div class="empty" id="menu-empty" hidden>
+        <strong>No dishes found</strong>
+        <p class="muted">Try a different search term or category.</p>
+      </div>
+    </section>
+
+    <!-- ---------- FOOD DETAILS ---------- -->
+    <section class="screen" id="view-details" data-view="details">
+      <button class="back-link" data-nav="menu">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to menu
+      </button>
+
+      <div class="detail-card" id="detail-card"></div>
+    </section>
+
+    <!-- ---------- CART ---------- -->
+    <section class="screen" id="view-cart" data-view="cart">
+      <div class="page-head">
+        <h2>Your cart</h2>
+        <p class="muted">Review items before choosing a pickup slot.</p>
+      </div>
+      <div id="cart-body"></div>
+    </section>
+
+    <!-- ---------- PICKUP ---------- -->
+    <section class="screen" id="view-pickup" data-view="pickup">
+      <button class="back-link" data-nav="cart">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to cart
+      </button>
+      <div class="page-head">
+        <h2>Pickup date &amp; time</h2>
+        <p class="muted">Choose when you will collect your order from the canteen counter.</p>
+      </div>
+      <div class="card step-card" id="pickup-card"></div>
+    </section>
+
+    <!-- ---------- PAYMENT ---------- -->
+    <section class="screen" id="view-payment" data-view="payment">
+      <button class="back-link" data-nav="pickup">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Back to pickup
+      </button>
+      <div class="page-head">
+        <h2>Payment</h2>
+        <p class="muted">Demo checkout &mdash; no real money is transferred and no banking details are collected.</p>
+      </div>
+      <div id="payment-body"></div>
+    </section>
+
+    <!-- ---------- CONFIRMATION ---------- -->
+    <section class="screen" id="view-confirmation" data-view="confirmation">
+      <div id="confirmation-body"></div>
+    </section>
+
+    <!-- ---------- MY ORDERS ---------- -->
+    <section class="screen" id="view-orders" data-view="orders">
+      <div class="page-head">
+        <h2>My orders</h2>
+        <p class="muted">Every pre-order placed with your account.</p>
+      </div>
+      <div id="orders-body"></div>
+    </section>
+
+  </main>
+
+  <nav class="tabbar">
+    <a href="#home" data-nav="home">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="#menu" data-nav="menu">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+      <span>Menu</span>
+    </a>
+    <a href="#cart" data-nav="cart">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M1.5 2h3l2.3 12.2a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 6H5.2"/></svg>
+      <span>Cart</span>
+    </a>
+    <a href="#orders" data-nav="orders">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-7-4.5L5 21z"/></svg>
+      <span>Orders</span>
+    </a>
+  </nav>
+</div>
+
+<!-- ===================== OVERLAYS ===================== -->
+<div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+<div class="modal" id="qr-modal" hidden>
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-card">
+    <button class="icon-btn modal-close" data-close-modal aria-label="Close">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <h3 id="qr-modal-title">Order QR</h3>
+    <div class="qr-frame"><img id="qr-modal-img" alt="Order QR code"></div>
+    <p class="muted small center" id="qr-modal-sub"></p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+# Java / Maven
+backend/target/
+**/target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Runtime
+*.pid
+*.log
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local configuration
+application-local.properties
+application-local.yml
+
+# Temporary files
+tmp/
+temp/
+
+# Test / generated files
+playwright-report/
+test-results/
+
+# OS
+.DS_Store
+Thumbs.db
